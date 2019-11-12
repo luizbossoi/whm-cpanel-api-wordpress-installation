@@ -9,6 +9,7 @@ To get your WHM API Token:
     - Click on "Generate Token", copy the token for to use in the future.
     
 # How to use this script
+*This script was made to run under Linux environment, if you run this script under Windows (EasyPHP etc) it may not work properly;*
 You can simply run installer.php on your server, or you can run this script as you wish.
 First you need to create this object with your host and whm token.
 
@@ -22,6 +23,9 @@ Where:
 After that, you can run a method to create your WHM account and install your WP after account creation.
 
 	$WCW->createAccountInstallWP($account_domain, $account_username, $account_password, $db_name, $db_user, $db_password);
+
+	$db_name, $db_user and $db_password are not required.
+	
 
 Where:
 

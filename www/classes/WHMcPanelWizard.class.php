@@ -24,6 +24,8 @@ class WHMcPanelWizard {
     private $cpanel_dbuser          = false;
     private $cpanel_dbpass          = false;
 
+	private $showParse_debug		= true;
+	
     # Validation functions
     function is_valid_domain_name($domain_name)
     {
@@ -117,11 +119,9 @@ class WHMcPanelWizard {
 	function __construct($api_url, $api_token) {
         $this->api_url          = $api_url;
         $this->api_token        = $api_token;
-        
-        if (!extension_loaded('zip')) { echo 'ZIP Extension not installed'; exit(); } 
-        if (!extension_loaded('curl')) { echo 'CURL Extension not installed'; exit(); } 
-        
+
         $this->temporary_folder = getcwd() . $this->temporary_folder;
+		var_dump($this->temporary_folder);exit();
         $this->cleanFiles();
 	}
     
@@ -131,6 +131,8 @@ class WHMcPanelWizard {
     }
     
     function parse($arr_ret, $print=false) {
+		if($this->showParse_debug==false) return true;
+		
         if(isset($arr_ret['api_res'])) {
             if(isset($arr_ret['api_res']['metadata'])) {
                 if(isset($arr_ret['api_res']['metadata']['result'])) {
@@ -214,7 +216,7 @@ class WHMcPanelWizard {
                         'cpanel_jsonapi_func'=>'createdb',
                         'db'=>$this->getPrefix($username) . $db_name
                        );
-        
+
         // create database
         $api_res    = $this->http_call('createdb',$args,'cpanel');
         $return['api_res'] = $api_res;    
@@ -316,7 +318,6 @@ class WHMcPanelWizard {
         
         $createdb_privileges    = $this->setMySQLDBPrivileges($acct_username, $db_name, $db_user);  
         if($createdb_privileges['action']!='ok') {
-            var_dump($createdb_privileges);
             $return['message'] = 'Database user privileges set  error: ' . $createdb_privileges['message'];
             return $this->parse($return, true);
         }
@@ -333,7 +334,7 @@ class WHMcPanelWizard {
         return $this->parse($return, true);
     }
     
-    function createAccountInstallWP($acct_domain, $acct_username, $acct_password, $db_name='wpress', $db_user='wpress', $db_password==false) {
+    function createAccountInstallWP($acct_domain, $acct_username, $acct_password, $db_name='wpress', $db_user='wpress', $db_password=false) {
         if($db_password==false) $db_password = $this->randomPassword();
         
         $create_account = $this->createAccountandDB($acct_domain, $acct_username, $acct_password, $db_name, $db_user, $db_password);
@@ -343,11 +344,11 @@ class WHMcPanelWizard {
         }
         
         $this->downloadWordpressZIP();
-        $this->replaceWPCONFIG($this->temporary_folder . "wordpress/wp-config-sample.php", $this->temporary_folder . "wordpress/wp-config.php");
-        $this->Zip($this->temporary_folder . "wordpress/", getcwd() . "/wordpress-release.zip");
-        $this->uploadWPZIP(getcwd() . "/wordpress-release.zip");
-        $this->unzipOnServer($account_username, $this->remote_wp_path "wordpress-release.zip");
-        $this->movefileToTrash($account_username, $this->remote_wp_path . "wordpress-release.zip");
+        $this->replaceWPCONFIG($this->temporary_folder . 'wordpress/wp-config-sample.php', $this->temporary_folder . 'wordpress/wp-config.php');
+        $this->Zip($this->temporary_folder . 'wordpress/', getcwd() . '/wordpress-release.zip');
+        $this->uploadWPZIP(getcwd() . '/wordpress-release.zip');
+        $this->unzipOnServer($acct_username, $this->remote_wp_path . 'wordpress-release.zip');
+        $this->movefileToTrash($acct_username, $this->remote_wp_path . 'wordpress-release.zip');
         $this->cleanFiles();
         print("Wordpress Installed");
         exit();
@@ -355,11 +356,11 @@ class WHMcPanelWizard {
     
     function downloadWordpressZIP() {
         $wordpress_zip = file_get_contents($this->wordpress_url);
-        file_put_contents("wordpress-latest.zip", $wordpress_zip);
+        file_put_contents('wordpress-latest.zip', $wordpress_zip);
         if(!is_dir($this->temporary_folder)) mkdir($this->temporary_folder);
         
         $zip = new ZipArchive;
-        $res = $zip->open("wordpress-latest.zip");
+        $res = $zip->open('wordpress-latest.zip');
         if ($res === TRUE) {
             $zip->extractTo($this->temporary_folder);
             $zip->close();
@@ -396,4 +397,13 @@ class WHMcPanelWizard {
         if(is_file("wordpress-latest.zip")) unlink("wordpress-latest.zip");
         if(is_file("wordpress-release.zip")) unlink("wordpress-release.zip");
     }
+	
+	public static function checkModules() {
+		$missing_modules = array();
+		if(!function_exists('ftp_connect')) { array_push($missing_modules, 'FTP Module - https://www.php.net/manual/book.ftp.php'); }
+		if(!function_exists('curl_init')) { array_push($missing_modules, 'CURL - https://www.php.net/manual/book.curl.php'); }
+		if(!extension_loaded('zip')) { array_push($missing_modules, 'ZIP - https://www.php.net/manual/book.zip.php'); }
+		
+		return $missing_modules;
+	}
 }

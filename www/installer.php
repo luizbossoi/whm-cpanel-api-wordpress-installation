@@ -1,4 +1,4 @@
-    <?php
+<?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -15,10 +15,19 @@ if(@$_SERVER['REQUEST_METHOD']=='POST') {
     $account_password   = addslashes($_POST['account_password']);
     
     $WCW = new WHMcPanelWizard($host, $whmtoken);
-    $WCW->createAccountInstallWP($account_domain, $account_username, $account_password, null, null, false);
+    $WCW->createAccountInstallWP($account_domain, $account_username, $account_password);
+}
+
+$missing_modules = WHMcPanelWizard::checkModules();
+if(sizeof($missing_modules)>0) {
+	print("<div style=\"padding:10px;background-color:#CFCFCF;border:solid 1px red\">");
+	print("WARNING: Missing modules are found, this script may not work properly.");
+	print("<ul>");
+	foreach($missing_modules as $msm) { print("<li>$msm</li>"); }
+	print("</ul></div>");
 }
 ?>
-<h1>Instalador WordPress</h1>
+<h1>Wordpress Setup</h1>
 <form method="post">
 <table>
     <tr>
