@@ -23,8 +23,6 @@ class WHMcPanelWizard {
     private $cpanel_dbname          = false;
     private $cpanel_dbuser          = false;
     private $cpanel_dbpass          = false;
-
-	private $showParse_debug		= true;
 	
     # Validation functions
     function is_valid_domain_name($domain_name)
@@ -121,7 +119,6 @@ class WHMcPanelWizard {
         $this->api_token        = $api_token;
 
         $this->temporary_folder = getcwd() . $this->temporary_folder;
-		var_dump($this->temporary_folder);exit();
         $this->cleanFiles();
 	}
     
@@ -130,9 +127,7 @@ class WHMcPanelWizard {
         $this->cpanel_password = $cpanel_password;
     }
     
-    function parse($arr_ret, $print=false) {
-		if($this->showParse_debug==false) return true;
-		
+    function parse($arr_ret, $print=false) {		
         if(isset($arr_ret['api_res'])) {
             if(isset($arr_ret['api_res']['metadata'])) {
                 if(isset($arr_ret['api_res']['metadata']['result'])) {
@@ -331,7 +326,7 @@ class WHMcPanelWizard {
         $this->cpanel_dbuser    = $db_user;
         $this->cpanel_dbpass    = $db_password;
         
-        return $this->parse($return, true);
+        return $this->parse($return, false);
     }
     
     function createAccountInstallWP($acct_domain, $acct_username, $acct_password, $db_name='wpress', $db_user='wpress', $db_password=false) {
@@ -372,8 +367,8 @@ class WHMcPanelWizard {
     
     function replaceWPCONFIG($file_path, $file_dest) {
         $file_content   = file_get_contents($file_path);
-        $file_content   = str_replace($this->wpconfig_databasename, $this->cpanel_dbname, $file_content);
-        $file_content   = str_replace($this->wpconfig_databaseuser, $this->cpanel_dbuser, $file_content);
+        $file_content   = str_replace($this->wpconfig_databasename, $this->getPrefix($this->cpanel_username) . $this->cpanel_dbname, $file_content);
+        $file_content   = str_replace($this->wpconfig_databaseuser, $this->getPrefix($this->cpanel_username) . $this->cpanel_dbuser, $file_content);
         $file_content   = str_replace($this->wpconfig_databasepass, $this->cpanel_dbpass, $file_content);
 
         file_put_contents($file_dest, $file_content);
@@ -381,8 +376,8 @@ class WHMcPanelWizard {
     
     function uploadWPZIP($wp_zipfile) {
         $conn_id = ftp_connect($this->api_url);
-        if($this->ftp_mode=='passive') ftp_pasv($conn_id, true);
         $login_result = ftp_login($conn_id, $this->cpanel_username, $this->cpanel_password);
+        if($this->ftp_mode=='passive') ftp_pasv($conn_id, true);
 
         if (!ftp_put($conn_id, $this->remote_wp_path . "/wordpress-release.zip", $wp_zipfile, $this->ftp_transfer)) {
             echo "Couldn't upload wordpress installer";

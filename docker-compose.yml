@@ -7,7 +7,5 @@ services:
     volumes:
       - ./www/:/var/www/html
       - ./.docker.webserver/apache2.conf:/etc/apache2/apache2.conf
-    depends_on:
-      - mysql
     ports:
       - "8080:80"

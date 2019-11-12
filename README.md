@@ -8,8 +8,18 @@ To get your WHM API Token:
     - On the left menu, under "Development", click on "Manage API Tokens""
     - Click on "Generate Token", copy the token for to use in the future.
     
+# Docker enabled
+If you want, just run ./docker-run.sh and a environment with everything needed to run this script will be setup.
+Open your brownser on http://localhost:8080/installer.php to use this script
+
+If you're planning to run on your custom server, here you are the required extensions:
+    - PHP Curl
+    - PHP ZIP
+    - PHP FTP
+
 # How to use this script
 *This script was made to run under Linux environment, if you run this script under Windows (EasyPHP etc) it may not work properly;*
+
 You can simply run installer.php on your server, or you can run this script as you wish.
 First you need to create this object with your host and whm token.
 
@@ -24,8 +34,7 @@ After that, you can run a method to create your WHM account and install your WP 
 
 	$WCW->createAccountInstallWP($account_domain, $account_username, $account_password, $db_name, $db_user, $db_password);
 
-	$db_name, $db_user and $db_password are not required.
-	
+Values of $db_name, $db_user and $db_password are not required, if not provided, will be filled automatically.
 
 Where:
 
@@ -50,5 +59,7 @@ This createAccountInstallWP method calls the following submethods:
 These methods are kinda self explanatory, but if you need more details about it, feel free to dig the source and find what they do, or open a issue request.
 Anyways, these methods can be called or changed as you need.
 
-Everything was tested and worked fine on version v80.0.22 of WHM.
+Unfortunately, this script does not validate return errors, but when possible, will be done. It's on my pipeline :) 
+
+Everything was tested and worked fine on version v84.0.8 (latest 2019-11-12) of WHM.
 
